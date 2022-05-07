@@ -4,23 +4,12 @@
 #include <utility>
 #include <vector>
 
-bool operator<(std::pair<int, int> &left, std::pair<int, int> &other) {
-    if (left.second - left.first + 1 == other.second - other.first + 1) {
-        return left.first < other.first;
-    }
-    return left.second - left.first + 1 > other.second - other.first + 1;
-}
-
-bool operator==(std::pair<int, int> &left, std::pair<int, int> &other) {
-    return left.first == other.first && left.second == other.second;
-}
-
 struct Avl {
-    std::pair<int, int> key;
+    int key;
     Avl *left;
     Avl *right;
     int depth;
-    Avl(std::pair<int, int> tkey) {
+    Avl(int tkey) {
         key = tkey;
         left = right = nullptr;
         depth = 1;
@@ -61,7 +50,7 @@ int getBalance(Avl *tr) {
     return depth(tr->left) - depth(tr->right);
 }
 
-Avl* insert(Avl* node, std::pair<int, int> key)  {
+Avl* insert(Avl* node, int key)  {
     if (node == nullptr) {
         Avl *cur = new Avl(key);
         return cur;
@@ -98,7 +87,7 @@ Avl *minValueNode(Avl* node) {
     return current;
 }
 
-Avl* erase(Avl* root, std::pair<int, int> key) {
+Avl* erase(Avl* root, int key) {
     if (root == nullptr) {
         return root;
     }
