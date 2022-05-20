@@ -261,3 +261,112 @@ std::set<int> get_roots(Polynom *p) { // получение целых корн�
     }
     return {};
 }
+
+Polynom * read(std::string &s) {
+    int was = -1;
+    int sign = 1; // по дефолту знак +
+    int n = s.size();
+    std::map<std::vector<int>, double> keys; // поддeржка инварианта
+    for (int i = 0; i < n;) {
+        if (s[i] == ' ') {
+            ++i;
+            continue;
+        }
+        if (is_letter(s[i]) || is_digit(s[i])) {
+            try {
+                if (was == 1) throw 1; // наличие существенных пробелов
+            }
+            catch (int e) {
+                if (e == 1) {
+                    std::cerr << "no sign after a term\n";
+                    return nullptr;
+                }
+            }
+            was = 1;
+            double cf;
+            if (s[i] >= '0' && s[i] <= '9') {
+                cf = 0;
+                while (i < n && is_digit(s[i])) {
+                    cf *= 10;
+                    cf += s[i] - '0';
+                    ++i;
+                }
+            } else {
+                cf = 1;
+            }
+            cf *= sign;
+            std::vector<int> degs(Alp, 0);
+            while (i < n && is_letter(s[i])) {
+                int pos = s[i] - 'a';
+                ++i;
+                int deg;
+                if (i < n && s[i] == '^') {
+                    bool is = 0;
+                    deg = 0;
+                    ++i;
+                    while (i < n && is_digit(s[i])) {
+                        is = 1;
+                        deg *= 10;
+                        deg += s[i] - '0';
+                        ++i;
+                    }
+                    try {
+                        if (!is) {
+                            throw 1;
+                        }
+                    }
+                    catch (int e) {
+                        std::cerr << "no pow after ^\n";
+                        return nullptr;
+                    }
+                } else {
+                    deg = 1;
+                }
+                degs[pos] += deg;
+            }
+            keys[degs] += cf;
+            continue;
+        }
+        if (s[i] == '+' || s[i] == '-') {
+            try {
+                if (was == 0) {
+                    throw 1;
+                }
+            }
+            catch(int e) {
+                if (e == 1) {
+                    std::cerr << "too many signs\n";
+                    return nullptr;
+                }
+            }
+            sign = (s[i] == '+' ? 1 : -1);
+            was = 0;
+            ++i;
+            continue;
+        }
+        std::cerr << "unexpected character\n";
+        return nullptr;
+    }
+    try {
+        if (was == 0) {
+            throw 1;
+        }
+    }
+    catch(int e) {
+        if (e == 1) {
+            std::cerr << "no terms after a sign\n";
+            return nullptr;
+        }
+    }
+    Polynom *res = nullptr;
+    for (auto [_degs, _cf] : keys) { // поддержание инварианта вследствие свойст map
+        if (_cf == 0) continue;
+        Polynom *to = new Polynom(_degs, _cf);
+        if (res != nullptr) {
+            set(to, res);
+        }
+        res = to;
+    }
+    return rotate(res);
+}
+
